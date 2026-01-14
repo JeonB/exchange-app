@@ -1,5 +1,5 @@
 import type { Currency, Wallet } from "../types/wallet.types";
-import type { ExchangeRates } from "../types/exchange.types";
+import type { LatestExchangeRates } from "../types/exchange.types";
 import { formatAmount, formatRate } from "./format";
 
 /**
@@ -9,22 +9,20 @@ export function getBalance(
   wallet: Wallet | undefined,
   currency: Currency
 ): string {
-  if (!wallet) return "0.00";
-  const balance = wallet.balances.find((b) => b.currency === currency);
-  return balance ? formatAmount(balance.amount) : "0.00";
+  if (!wallet || !wallet.wallets) return "0.00";
+  const walletItem = wallet.wallets.find((w) => w.currency === currency);
+  return walletItem ? formatAmount(walletItem.balance) : "0.00";
 }
 
 /**
- * 환율 정보에서 특정 통화 쌍의 환율을 가져옵니다.
+ * 환율 정보에서 특정 통화의 환율을 가져옵니다.
+ * 새로운 API 구조 (LatestExchangeRates)를 사용합니다.
  */
 export function getRate(
-  rates: ExchangeRates | undefined,
-  from: Currency,
-  to: Currency
+  rates: LatestExchangeRates | undefined,
+  currency: Currency
 ): string {
   if (!rates) return "-";
-  const rate = rates.rates.find(
-    (r) => r.fromCurrency === from && r.toCurrency === to
-  );
+  const rate = rates.find((r) => r.currency === currency);
   return rate ? formatRate(rate.rate) : "-";
 }

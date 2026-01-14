@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { getQuote, executeExchange } from '@/lib/actions/exchange';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { getQuote, executeExchange, getLatestExchangeRates } from '@/lib/actions/exchange';
 import { useToast } from '@/components/ui/toast';
 import { formatAmount, formatRate } from '@/lib/utils/format';
 import Button from '@/components/ui/button';
@@ -13,32 +13,44 @@ import type { QuoteRequest, QuoteResponse, ExchangeRequest } from '@/lib/types/e
 
 const CURRENCIES: Currency[] = ['KRW', 'USD', 'EUR', 'JPY'];
 
+type ExchangeMode = 'buy' | 'sell';
+
 export default function ExchangeForm() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
-  const [fromCurrency, setFromCurrency] = useState<Currency>('KRW');
-  const [toCurrency, setToCurrency] = useState<Currency>('USD');
+  const [mode, setMode] = useState<ExchangeMode>('buy');
+  const [currency, setCurrency] = useState<Currency>('USD');
   const [amount, setAmount] = useState('');
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [error, setError] = useState('');
 
-  // Helper function to get available currencies excluding the from currency
-  const getAvailableCurrencies = (exclude: Currency): Currency[] => {
-    return CURRENCIES.filter((c) => c !== exclude);
+  // 최신 환율 조회 (exchangeRateId를 얻기 위해)
+  const { data: latestRates } = useQuery({
+    queryKey: ['latestExchangeRates'],
+    queryFn: () => getLatestExchangeRates(),
+  });
+
+  // Buy 모드: KRW -> USD (KRW를 사용하여 USD 구매)
+  // Sell 모드: USD -> KRW (USD를 판매하여 KRW 획득)
+  const fromCurrency = mode === 'buy' ? 'KRW' : currency;
+  const toCurrency = mode === 'buy' ? currency : 'KRW';
+
+  // Helper function to get available currencies for exchange (KRW 제외)
+  const getAvailableCurrencies = (): Currency[] => {
+    return CURRENCIES.filter((c) => c !== 'KRW');
   };
 
-  // Handle fromCurrency change and ensure toCurrency is different
-  const handleFromCurrencyChange = (newCurrency: Currency) => {
-    setFromCurrency(newCurrency);
+  // Handle currency change
+  const handleCurrencyChange = (newCurrency: Currency) => {
+    setCurrency(newCurrency);
     setQuote(null);
-    // If the new fromCurrency matches toCurrency, change toCurrency to the first available option
-    if (newCurrency === toCurrency) {
-      const available = getAvailableCurrencies(newCurrency);
-      if (available.length > 0) {
-        setToCurrency(available[0]);
-      }
-    }
+  };
+
+  // Handle mode change
+  const handleModeChange = (newMode: ExchangeMode) => {
+    setMode(newMode);
+    setQuote(null);
   };
 
   const quoteMutation = useMutation({
@@ -78,15 +90,10 @@ export default function ExchangeForm() {
       return;
     }
 
-    if (fromCurrency === toCurrency) {
-      setError('출금 통화와 입금 통화가 같을 수 없습니다.');
-      return;
-    }
-
     quoteMutation.mutate({
       fromCurrency,
       toCurrency,
-      amount: amountValue,
+      forexAmount: parsedAmount,
     });
   };
 
@@ -96,61 +103,83 @@ export default function ExchangeForm() {
       return;
     }
 
+    if (!latestRates) {
+      setError('환율 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    // 환전할 통화의 exchangeRateId 찾기
+    // Buy 모드: toCurrency (USD 등), Sell 모드: fromCurrency (USD 등)
+    const targetCurrency = mode === 'buy' ? toCurrency : fromCurrency;
+    const exchangeRate = latestRates.find((rate) => rate.currency === targetCurrency);
+
+    if (!exchangeRate) {
+      setError('환율 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    const amountValue = parseFloat(amount.trim());
+    if (isNaN(amountValue) || amountValue <= 0) {
+      setError('환전 금액을 입력해주세요.');
+      return;
+    }
+
     exchangeMutation.mutate({
+      exchangeRateId: exchangeRate.exchangeRateId,
       fromCurrency,
       toCurrency,
-      amount: amount.trim(),
+      forexAmount: amountValue,
     });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>환전하기</CardTitle>
+        <CardTitle>{currency} 환전하기</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">출금 통화</label>
-              <select
-                name="fromCurrency"
-                value={fromCurrency}
-                onChange={(e) => handleFromCurrencyChange(e.target.value as Currency)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              >
-                {CURRENCIES.map((currency) => (
-                  <option key={currency} value={currency}>
-                    {currency}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">입금 통화</label>
-              <select
-                name="toCurrency"
-                value={toCurrency}
-                onChange={(e) => {
-                  const newToCurrency = e.target.value as Currency;
-                  setToCurrency(newToCurrency);
-                  setQuote(null);
-                }}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              >
-                {getAvailableCurrencies(fromCurrency).map((currency) => (
-                  <option key={currency} value={currency}>
-                    {currency}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Buy/Sell 버튼 */}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={mode === 'buy' ? 'primary' : 'secondary'}
+              onClick={() => handleModeChange('buy')}
+              className="flex-1"
+            >
+              살래요
+            </Button>
+            <Button
+              type="button"
+              variant={mode === 'sell' ? 'primary' : 'secondary'}
+              onClick={() => handleModeChange('sell')}
+              className="flex-1"
+            >
+              팔래요
+            </Button>
           </div>
 
+          {/* 통화 선택 */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">통화 선택</label>
+            <select
+              name="currency"
+              value={currency}
+              onChange={(e) => handleCurrencyChange(e.target.value as Currency)}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              {getAvailableCurrencies().map((curr) => (
+                <option key={curr} value={curr}>
+                  {curr}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* 금액 입력 */}
           <div>
             <label htmlFor="amount" className="mb-1 block text-sm font-medium text-gray-700">
-              환전 금액
+              {mode === 'buy' ? '매수 금액' : '매도 금액'}
             </label>
             <Input
               id="amount"
@@ -158,7 +187,7 @@ export default function ExchangeForm() {
               type="number"
               step="0.01"
               min="0"
-              placeholder="0.00"
+              placeholder={mode === 'buy' ? `30 달러 사기` : `30 달러 팔기`}
               value={amount}
               onChange={(e) => {
                 setAmount(e.target.value);
@@ -170,34 +199,36 @@ export default function ExchangeForm() {
           {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
           {quote && (
-            <div className="rounded-lg bg-blue-50 p-4">
-              <div className="mb-2 text-sm text-gray-600">환전 견적</div>
-              <div className="text-lg font-semibold text-gray-900">
-                {formatAmount(quote.fromAmount)} {quote.fromCurrency} → {formatAmount(quote.toAmount)}{' '}
-                {quote.toCurrency}
+            <div className="space-y-3">
+              <div className="rounded-lg bg-blue-50 p-4">
+                <div className="mb-2 text-sm text-gray-600">{mode === 'buy' ? '필요 원화' : '받을 원화'}</div>
+                <div className="text-lg font-semibold text-gray-900">
+                  {mode === 'buy'
+                    ? `${formatAmount(quote.krwAmount)} 원이 필요해요`
+                    : `${formatAmount(quote.krwAmount)} 원을 받을 수 있어요`}
+                </div>
               </div>
-              <div className="mt-1 text-sm text-gray-600">환율: {formatRate(quote.rate)}</div>
+              <div className="text-center text-sm text-gray-600">
+                적용 환율: 1 {currency} = {formatRate(quote.appliedRate)} ₩
+              </div>
             </div>
           )}
 
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onClick={handleGetQuote}
-              disabled={quoteMutation.isPending || !amount}
-              className="flex-1"
-            >
-              {quoteMutation.isPending ? '견적 조회 중...' : '견적 조회'}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleExchange}
-              disabled={!quote || exchangeMutation.isPending}
-              className="flex-1"
-            >
-              {exchangeMutation.isPending ? '환전 중...' : '환전하기'}
-            </Button>
-          </div>
+          <Button
+            type="button"
+            onClick={quote ? handleExchange : handleGetQuote}
+            disabled={!amount || quoteMutation.isPending || exchangeMutation.isPending || (quote === null && !amount)}
+            className="w-full"
+            size="lg"
+          >
+            {quoteMutation.isPending
+              ? '견적 조회 중...'
+              : exchangeMutation.isPending
+                ? '환전 중...'
+                : quote
+                  ? '환전하기'
+                  : '견적 조회'}
+          </Button>
         </div>
       </CardContent>
     </Card>

@@ -4,7 +4,7 @@ import { formatDate, formatAmount, formatRate } from "@/lib/utils/format";
 import type { ExchangeOrder } from "@/lib/types/exchange.types";
 
 export default async function OrderList() {
-  let ordersData;
+  let ordersData: ExchangeOrder[] | undefined;
   let error: string | null = null;
 
   try {
@@ -24,15 +24,15 @@ export default async function OrderList() {
       <CardContent>
         {error && <div className="text-center py-8 text-red-600">{error}</div>}
 
-        {!error && (!ordersData?.orders || ordersData.orders.length === 0) && (
+        {!error && (!ordersData || ordersData.length === 0) && (
           <div className="text-center py-8 text-gray-500">
             거래 내역이 없습니다.
           </div>
         )}
 
-        {!error && ordersData?.orders && ordersData.orders.length > 0 && (
+        {!error && ordersData && ordersData.length > 0 && (
           <div className="space-y-4">
-            {ordersData.orders.map((order: ExchangeOrder) => (
+            {ordersData.map((order: ExchangeOrder) => (
               <div
                 key={order.orderId}
                 className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
@@ -50,12 +50,12 @@ export default async function OrderList() {
                   <div className="text-right">
                     <div className="text-sm text-gray-600 mb-1">환율</div>
                     <div className="text-base font-medium text-gray-900">
-                      {formatRate(order.rate)}
+                      {formatRate(order.appliedRate)}
                     </div>
                   </div>
                 </div>
                 <div className="text-sm text-gray-500 mt-2">
-                  {formatDate(order.createdAt)}
+                  {formatDate(order.orderedAt)}
                 </div>
               </div>
             ))}

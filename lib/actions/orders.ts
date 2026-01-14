@@ -11,7 +11,7 @@ import type { ExchangeOrders } from '@/lib/types/exchange.types';
  */
 async function getToken(): Promise<string | null> {
   const cookieStore = await cookies();
-  return cookieStore.get('accessToken')?.value || null;
+  return cookieStore.get('token')?.value || null;
 }
 
 /**
@@ -27,7 +27,7 @@ export async function getOrders(): Promise<ExchangeOrders> {
   const response = await fetch(`${API_BASE_URL}/orders`, {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json',
+      accept: '*/*',
       Authorization: `Bearer ${token}`,
     },
     cache: 'no-store', // 항상 최신 데이터 조회

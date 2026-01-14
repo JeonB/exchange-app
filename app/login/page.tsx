@@ -1,37 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { login } from "@/lib/actions/auth";
 import { useToast } from "@/components/ui/toast";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 
 export default function LoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-
-  const loginMutation = useMutation({
-    mutationFn: login,
-    onSuccess: () => {
-      const redirect = searchParams.get("redirect") || "/";
-      router.push(redirect);
-      router.refresh();
-    },
-    onError: (err: Error) => {
-      setError(err.message);
-      showToast(err.message, "error");
-    },
-  });
+  const [isPending, startTransition] = useTransition();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
-    loginMutation.mutate({ email });
+
+    const redirectPath = searchParams.get("redirect") || "/";
+
+    startTransition(async () => {
+      try {
+        await login({ email }, redirectPath);
+        // redirect는 NEXT_REDIRECT 예외를 던지므로 여기 도달하지 않습니다
+      } catch (err) {
+        // NEXT_REDIRECT는 실제 에러가 아니므로 다시 던집니다
+        if (err && typeof err === 'object' && 'digest' in err && typeof err.digest === 'string' && err.digest.includes('NEXT_REDIRECT')) {
+          throw err;
+        }
+        const errorMessage = err instanceof Error ? err.message : "로그인에 실패했습니다.";
+        setError(errorMessage);
+        showToast(errorMessage, "error");
+      }
+    });
   };
 
   return (
@@ -59,7 +61,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={loginMutation.isPending}
+                disabled={isPending}
               />
             </div>
 
@@ -72,9 +74,9 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={loginMutation.isPending}
+              disabled={isPending}
             >
-              {loginMutation.isPending ? "처리 중..." : "시작하기"}
+              {isPending ? "처리 중..." : "시작하기"}
             </Button>
           </form>
         </div>
