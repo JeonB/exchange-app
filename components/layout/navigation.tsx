@@ -18,12 +18,16 @@ export default function Navigation() {
     },
   });
 
+  if (pathname === '/login') {
+    return null;
+  }
+
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-300 bg-white px-4 py-3 lg:px-10 lg:py-4">
+    <nav className="sticky top-0 z-50 border-b border-gray-300 bg-white px-4 py-2.5 md:py-3 lg:px-10 lg:py-4">
       <div className="max-w-8xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 md:gap-2">
           <svg
-            className="text-blue h-5 w-5"
+            className="text-blue h-4 w-4 md:h-5 md:w-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -36,12 +40,12 @@ export default function Navigation() {
               d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
             />
           </svg>
-          <div className="text-lg font-semibold text-gray-900">Exchange app</div>
+          <div className="text-base font-semibold text-gray-900 md:text-lg">Exchange app</div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <Link
             href="/"
-            className={`text-sm font-medium ${
+            className={`text-xs font-medium md:text-sm ${
               pathname === '/' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -49,7 +53,7 @@ export default function Navigation() {
           </Link>
           <Link
             href="/history"
-            className={`text-sm font-medium ${
+            className={`text-xs font-medium md:text-sm ${
               pathname === '/history' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
             }`}
           >

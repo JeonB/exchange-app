@@ -31,23 +31,23 @@ export default function ExchangeRates() {
     const isPositive = rate.changePercentage >= 0;
     return (
       <Card className="bg-white">
-        <CardContent className="pt-6">
-          <div className="mb-3 flex items-start justify-between">
-            <Typography variant="h4" className="text-lg">
+        <CardContent className="pt-4 md:pt-6">
+          <div className="mb-2 flex items-start justify-between md:mb-3">
+            <Typography variant="h4" className="text-base md:text-lg">
               {rate.currency}
             </Typography>
             <Typography variant="span">{getCurrencyName(rate.currency)}</Typography>
           </div>
-          <Typography variant="h3" className="mb-3 text-xl">
+          <Typography variant="h3" className="mb-2 text-lg md:mb-3 md:text-xl">
             {formatRate(rate.rate)} KRW
           </Typography>
           <div className={`flex items-center gap-1 ${isPositive ? 'text-red-600' : 'text-blue-600'}`}>
             {isPositive ? (
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
               </svg>
             ) : (
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             )}
@@ -62,8 +62,8 @@ export default function ExchangeRates() {
   };
 
   return (
-    <div className="mb-6">
-      <div className="grid grid-cols-2 gap-4">
+    <div className="mb-4 md:mb-6">
+      <div className="grid grid-cols-2 gap-2 md:gap-4">
         {isLoading ? (
           <Typography variant="span" className="col-span-2 text-gray-500">
             환율 정보를 불러오는 중...

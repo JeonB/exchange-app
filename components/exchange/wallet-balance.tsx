@@ -72,17 +72,17 @@ export default function WalletBalance() {
         ) : (
           <>
             <div className="flex-1">
-              <Typography variant="h3" className="mb-4 text-lg">
+              <Typography variant="h3" className="mb-3 text-base md:mb-4 md:text-lg">
                 내 지갑
               </Typography>
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 {DISPLAY_CURRENCIES.map((currency) => {
                   const balance = getBalance(wallet, currency);
                   const symbol = currency === 'KRW' ? '₩' : currency === 'USD' ? '$' : currency === 'JPY' ? '¥' : '₩';
                   return (
                     <div key={currency} className="flex items-center justify-between">
                       <Typography variant="span">{currency}</Typography>
-                      <Typography variant="h4" className="text-lg">
+                      <Typography variant="h4" className="text-base md:text-lg">
                         {symbol} {formatAmount(balance, 2, 2)}
                       </Typography>
                     </div>
@@ -90,12 +90,12 @@ export default function WalletBalance() {
                 })}
               </div>
             </div>
-            <div className="mt-6 border-t border-gray-200 pt-4">
+            <div className="mt-4 border-t border-gray-200 pt-3 md:mt-6 md:pt-4">
               <div className="flex items-center justify-between">
                 <Typography variant="span" className="font-medium">
                   총 보유 자산
                 </Typography>
-                <Typography variant="h3" className="text-blue text-xl">
+                <Typography variant="h3" className="text-blue text-lg md:text-xl">
                   ₩ {totalAssets}
                 </Typography>
               </div>

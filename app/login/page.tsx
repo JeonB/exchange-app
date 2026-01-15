@@ -42,11 +42,11 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-xl">
-        <div className="mb-8 flex flex-col items-center">
+      <div className="w-full max-w-md md:max-w-lg lg:max-w-xl">
+        <div className="mb-6 flex flex-col items-center md:mb-8">
           {/* Wi-Fi 아이콘 */}
           <svg
-            className="text-blue mb-4 h-12 w-12"
+            className="text-blue mb-3 h-10 w-10 md:mb-4 md:h-12 md:w-12"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -59,21 +59,25 @@ export default function LoginPage() {
               d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
             />
           </svg>
-          <Typography variant="h1" className="mb-2 text-5xl text-gray-700">
+          <Typography variant="h1" className="mb-2 text-3xl text-gray-700 md:text-4xl lg:text-5xl">
             반갑습니다.
           </Typography>
-          <Typography variant="p" className="text-[32px] font-medium text-gray-600">
+          <Typography variant="p" className="text-xl font-medium text-gray-600 md:text-2xl lg:text-[32px]">
             로그인 정보를 입력해주세요.
           </Typography>
         </div>
 
-        <div className="bg-gray-0 rounded-xl px-8 py-6 shadow-md">
-          <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="bg-gray-0 rounded-xl px-4 py-4 shadow-md md:px-8 md:py-6">
+          <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
             <div>
-              <Typography variant="label" htmlFor="email" className="mb-3 block text-xl text-gray-600">
+              <Typography
+                variant="label"
+                htmlFor="email"
+                className="mb-2 block text-base text-gray-600 md:mb-3 md:text-lg lg:text-xl"
+              >
                 이메일 주소를 입력해주세요.
               </Typography>
-              <div className="flex items-center gap-2.5 rounded-xl border border-gray-300 bg-white p-6">
+              <div className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white p-4 md:gap-2.5 md:p-6">
                 <input
                   id="email"
                   name="email"
@@ -83,7 +87,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isPending}
-                  className="h-7 min-w-0 flex-1 border-none bg-transparent text-xl text-gray-600 outline-none"
+                  className="h-6 min-w-0 flex-1 border-none bg-transparent text-base text-gray-600 outline-none md:h-7 md:text-lg lg:text-xl"
                 />
               </div>
             </div>
