@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import './globals.css';
 import QueryProvider from '@/components/providers/query-provider';
 import ToastProvider from '@/components/providers/toast-provider';
+import Navigation from '@/components/layout/navigation';
 
 const pretendard = localFont({
   variable: '--font-pretendard',
@@ -26,7 +27,12 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`${pretendard.variable} antialiased`}>
         <QueryProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <div className="max-w-8xl mx-auto flex min-h-screen flex-col bg-white">
+              <Navigation />
+              {children}
+            </div>
+          </ToastProvider>
         </QueryProvider>
       </body>
     </html>

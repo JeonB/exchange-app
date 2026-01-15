@@ -1,12 +1,10 @@
 import WalletBalance from '@/components/exchange/wallet-balance';
 import ExchangeRates from '@/components/exchange/exchange-rates';
 import ExchangeForm from '@/components/exchange/exchange-form';
-import Navigation from '@/components/layout/navigation';
 
 export default function ExchangePage() {
   return (
-    <div className="max-w-8xl mx-auto flex min-h-screen flex-col bg-white">
-      <Navigation />
+    <>
       <div className="my-5 px-10 lg:my-10 lg:px-20">
         <h2 className="text-2xl font-bold text-gray-900">환율 정보</h2>
         <p className="text-sm text-gray-600">실시간 환율을 확인하고 간편하게 환전하세요.</p>
@@ -21,6 +19,6 @@ export default function ExchangePage() {
         {/* 우측: 환전 폼 */}
         <ExchangeForm />
       </div>
-    </div>
+    </>
   );
 }
