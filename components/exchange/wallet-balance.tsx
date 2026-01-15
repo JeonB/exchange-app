@@ -6,6 +6,7 @@ import { getLatestExchangeRates } from '@/lib/actions/exchange';
 import { Card, CardContent } from '@/components/ui/card';
 import { getBalance } from '@/lib/utils/wallet';
 import { formatAmount } from '@/lib/utils/format';
+import Typography from '@/components/ui/typography';
 import type { Currency, Wallet } from '@/lib/types/wallet.types';
 import type { LatestExchangeRates } from '@/lib/types/exchange.types';
 
@@ -61,23 +62,29 @@ export default function WalletBalance() {
     <Card className="flex h-full flex-col">
       <CardContent>
         {walletLoading ? (
-          <div className="text-gray-500">지갑 정보를 불러오는 중...</div>
+          <Typography variant="span" className="text-gray-500">
+            지갑 정보를 불러오는 중...
+          </Typography>
         ) : error ? (
-          <div className="text-red-600">{error}</div>
+          <Typography variant="span" className="text-red-600">
+            {error}
+          </Typography>
         ) : (
           <>
             <div className="flex-1">
-              <h3 className="mb-4 text-lg font-semibold text-gray-900">내 지갑</h3>
+              <Typography variant="h3" className="mb-4 text-lg">
+                내 지갑
+              </Typography>
               <div className="space-y-3">
                 {DISPLAY_CURRENCIES.map((currency) => {
                   const balance = getBalance(wallet, currency);
                   const symbol = currency === 'KRW' ? '₩' : currency === 'USD' ? '$' : currency === 'JPY' ? '¥' : '₩';
                   return (
                     <div key={currency} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">{currency}</span>
-                      <span className="text-lg font-semibold text-gray-900">
+                      <Typography variant="span">{currency}</Typography>
+                      <Typography variant="h4" className="text-lg">
                         {symbol} {formatAmount(balance, 2, 2)}
-                      </span>
+                      </Typography>
                     </div>
                   );
                 })}
@@ -85,8 +92,12 @@ export default function WalletBalance() {
             </div>
             <div className="mt-6 border-t border-gray-200 pt-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">총 보유 자산</span>
-                <span className="text-blue text-xl font-bold">₩ {totalAssets}</span>
+                <Typography variant="span" className="font-medium">
+                  총 보유 자산
+                </Typography>
+                <Typography variant="h3" className="text-blue text-xl">
+                  ₩ {totalAssets}
+                </Typography>
               </div>
             </div>
           </>

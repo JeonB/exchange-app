@@ -28,7 +28,7 @@ export default function RootLayout({
       <body className={`${pretendard.variable} antialiased`}>
         <QueryProvider>
           <ToastProvider>
-            <div className="max-w-8xl mx-auto flex min-h-screen flex-col bg-white">
+            <div className="max-w-8xl mx-auto flex min-h-screen flex-col bg-white pb-10">
               <Navigation />
               {children}
             </div>

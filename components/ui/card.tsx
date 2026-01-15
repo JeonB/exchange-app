@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils/cn';
 type CardProps = ComponentProps<'div'>;
 
 export function Card({ className, ...props }: CardProps) {
-  return <div className={cn('bg-gray-0 rounded-lg border border-gray-200 shadow-sm', className)} {...props} />;
+  return <div className={cn('bg-gray-0 rounded-xl border border-gray-200 shadow-sm', className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: ComponentProps<'div'>) {

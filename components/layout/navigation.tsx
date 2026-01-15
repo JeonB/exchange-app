@@ -19,7 +19,7 @@ export default function Navigation() {
   });
 
   return (
-    <nav className="border-b border-gray-300 px-4 py-3 lg:px-10 lg:py-4">
+    <nav className="sticky top-0 z-50 border-b border-gray-300 bg-white px-4 py-3 lg:px-10 lg:py-4">
       <div className="max-w-8xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
           <svg

@@ -6,6 +6,7 @@ import { formatAmount, formatRate } from '@/lib/utils/format';
 import { useExchangeForm } from '@/lib/hooks/use-exchange-form';
 import Button from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import Typography from '@/components/ui/typography';
 import type { Currency } from '@/lib/types/wallet.types';
 
 const CURRENCY_INFO: Record<Exclude<Currency, 'KRW'>, { flag: string; label: string }> = {
@@ -67,7 +68,7 @@ export default function ExchangeForm() {
             </svg>
           </button>
           {isDropdownOpen && (
-            <div className="absolute top-full left-0 z-10 mt-1 w-40 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+            <div className="absolute top-full left-0 z-10 mt-1 w-40 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
               {getAvailableCurrencies().map((curr) => {
                 const info = CURRENCY_INFO[curr as Exclude<Currency, 'KRW'>];
                 return (
@@ -111,10 +112,10 @@ export default function ExchangeForm() {
           </div>
 
           <div className="flex-1">
-            <label htmlFor="amount" className="mb-3 block text-sm font-medium text-gray-600">
+            <Typography variant="label" htmlFor="amount" className="mb-3 block">
               {mode === 'buy' ? '매수 금액' : '매도 금액'}
-            </label>
-            <div className="flex items-center gap-2.5 rounded-lg border border-gray-300 bg-white p-6">
+            </Typography>
+            <div className="flex items-center gap-2.5 rounded-xl border border-gray-300 bg-white p-6">
               <input
                 id="amount"
                 name="amount"
@@ -137,13 +138,17 @@ export default function ExchangeForm() {
               </div>
             </div>
 
-            {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+            {error && (
+              <Typography variant="span" className="block rounded-xl bg-red-50 p-3 text-red-600">
+                {error}
+              </Typography>
+            )}
 
             <div className="space-y-3">
-              <label className="mb-3 block text-sm font-medium text-gray-600">
+              <Typography variant="label" className="mb-3 block">
                 {mode === 'buy' ? '필요 원화' : '받을 원화'}
-              </label>
-              <div className="flex items-center gap-2.5 rounded-lg border border-gray-500 bg-gray-100 p-6">
+              </Typography>
+              <div className="flex items-center gap-2.5 rounded-xl border border-gray-500 bg-gray-100 p-6">
                 <span className="min-w-0 flex-1 text-right text-xl leading-none text-gray-600">
                   {quote ? formatAmount(quote.krwAmount) : '0'}
                 </span>
