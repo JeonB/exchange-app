@@ -1,21 +1,24 @@
-import { getExchangeRates } from '@/lib/actions/wallet';
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { getLatestExchangeRates } from '@/lib/actions/exchange';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatRate } from '@/lib/utils/format';
 import type { LatestExchangeRates } from '@/lib/types/exchange.types';
 
-export default async function ExchangeRates() {
-  let rates: LatestExchangeRates | undefined;
-  let error: string | null = null;
-
-  try {
-    rates = await getExchangeRates();
-  } catch (err) {
-    error = err instanceof Error ? err.message : '환율 정보를 불러오는 중 오류가 발생했습니다.';
-  }
+export default function ExchangeRates() {
+  const { data: rates, error, isLoading } = useQuery<LatestExchangeRates>({
+    queryKey: ['exchangeRates'],
+    queryFn: () => getLatestExchangeRates(),
+    refetchInterval: 10000, // 10초마다 자동 갱신
+    staleTime: 5000, // 5초간 데이터를 fresh로 유지
+  });
 
   // USD와 JPY 환율 필터링
   const usdRate = rates?.find((r) => r.currency === 'USD');
   const jpyRate = rates?.find((r) => r.currency === 'JPY');
+  
+  const errorMessage = error instanceof Error ? error.message : '환율 정보를 불러오는 중 오류가 발생했습니다.';
 
   return (
     <div className="mb-6">
@@ -27,8 +30,10 @@ export default async function ExchangeRates() {
       </div>
       <Card>
         <CardContent className="pt-6">
-          {error ? (
-            <div className="text-red-600">{error}</div>
+          {isLoading ? (
+            <div className="text-gray-500">환율 정보를 불러오는 중...</div>
+          ) : error ? (
+            <div className="text-red-600">{errorMessage}</div>
           ) : (
             <div className="space-y-4">
               {usdRate && (

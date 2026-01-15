@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { getQuote, executeExchange, getLatestExchangeRates } from '@/lib/actions/exchange';
 import { useToast } from '@/components/ui/toast';
@@ -11,7 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { Currency } from '@/lib/types/wallet.types';
 import type { QuoteRequest, QuoteResponse, ExchangeRequest } from '@/lib/types/exchange.types';
 
-const CURRENCIES: Currency[] = ['KRW', 'USD', 'EUR', 'JPY'];
+const CURRENCIES: Currency[] = ['KRW', 'USD', 'JPY'];
 
 type ExchangeMode = 'buy' | 'sell';
 
@@ -26,7 +26,7 @@ export default function ExchangeForm() {
   const [error, setError] = useState('');
 
   // 최신 환율 조회 (exchangeRateId를 얻기 위해)
-  const { data: latestRates } = useQuery({
+  const { data: latestRates, refetch: refetchLatestRates } = useQuery({
     queryKey: ['latestExchangeRates'],
     queryFn: () => getLatestExchangeRates(),
   });
@@ -81,40 +81,45 @@ export default function ExchangeForm() {
     },
   });
 
-  const handleGetQuote = () => {
+  // 자동 견적 조회를 위한 debounce
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    // 이전 타이머 클리어
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
     const amountValue = amount.trim();
     const parsedAmount = parseFloat(amountValue);
 
+    // 금액이 비어있거나 유효하지 않으면 견적 초기화
     if (!amountValue || isNaN(parsedAmount) || parsedAmount <= 0) {
-      setError('환전 금액을 입력해주세요.');
+      setQuote(null);
+      setError('');
       return;
     }
 
-    quoteMutation.mutate({
-      fromCurrency,
-      toCurrency,
-      forexAmount: parsedAmount,
-    });
-  };
+    // debounce: 500ms 후 견적 조회
+    debounceTimerRef.current = setTimeout(() => {
+      quoteMutation.mutate({
+        fromCurrency,
+        toCurrency,
+        forexAmount: parsedAmount,
+      });
+    }, 500);
 
-  const handleExchange = () => {
+    // cleanup
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [amount, fromCurrency, toCurrency]);
+
+  const handleExchange = async () => {
     if (!quote) {
-      setError('먼저 견적을 조회해주세요.');
-      return;
-    }
-
-    if (!latestRates) {
-      setError('환율 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
-      return;
-    }
-
-    // 환전할 통화의 exchangeRateId 찾기
-    // Buy 모드: toCurrency (USD 등), Sell 모드: fromCurrency (USD 등)
-    const targetCurrency = mode === 'buy' ? toCurrency : fromCurrency;
-    const exchangeRate = latestRates.find((rate) => rate.currency === targetCurrency);
-
-    if (!exchangeRate) {
-      setError('환율 정보를 찾을 수 없습니다.');
+      setError('견적을 불러오는 중입니다. 잠시만 기다려주세요.');
       return;
     }
 
@@ -124,12 +129,36 @@ export default function ExchangeForm() {
       return;
     }
 
-    exchangeMutation.mutate({
-      exchangeRateId: exchangeRate.exchangeRateId,
-      fromCurrency,
-      toCurrency,
-      forexAmount: amountValue,
-    });
+    try {
+      // 환전 실행 직전에 최신 환율을 다시 조회 (캐시 무시)
+      const { data: freshRates } = await refetchLatestRates();
+      
+      if (!freshRates) {
+        setError('환율 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+
+      // 환전할 통화의 exchangeRateId 찾기
+      // Buy 모드: toCurrency (USD 등), Sell 모드: fromCurrency (USD 등)
+      const targetCurrency = mode === 'buy' ? toCurrency : fromCurrency;
+      const exchangeRate = freshRates.find((rate) => rate.currency === targetCurrency);
+
+      if (!exchangeRate) {
+        setError('환율 정보를 찾을 수 없습니다.');
+        return;
+      }
+
+      exchangeMutation.mutate({
+        exchangeRateId: exchangeRate.exchangeRateId,
+        fromCurrency,
+        toCurrency,
+        forexAmount: amountValue,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '환율 정보를 불러오는 중 오류가 발생했습니다.';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+    }
   };
 
   return (
@@ -143,7 +172,7 @@ export default function ExchangeForm() {
           <div className="flex gap-2">
             <Button
               type="button"
-              variant={mode === 'buy' ? 'primary' : 'secondary'}
+              variant={mode === 'buy' ? 'blue' : 'secondary'}
               onClick={() => handleModeChange('buy')}
               className="flex-1"
             >
@@ -151,7 +180,7 @@ export default function ExchangeForm() {
             </Button>
             <Button
               type="button"
-              variant={mode === 'sell' ? 'primary' : 'secondary'}
+              variant={mode === 'sell' ? 'destructive' : 'secondary'}
               onClick={() => handleModeChange('sell')}
               className="flex-1"
             >
@@ -191,7 +220,6 @@ export default function ExchangeForm() {
               value={amount}
               onChange={(e) => {
                 setAmount(e.target.value);
-                setQuote(null);
               }}
             />
           </div>
@@ -216,8 +244,9 @@ export default function ExchangeForm() {
 
           <Button
             type="button"
-            onClick={quote ? handleExchange : handleGetQuote}
-            disabled={!amount || quoteMutation.isPending || exchangeMutation.isPending || (quote === null && !amount)}
+            variant="cta1"
+            onClick={handleExchange}
+            disabled={!amount || !quote || quoteMutation.isPending || exchangeMutation.isPending}
             className="w-full"
             size="lg"
           >
@@ -225,9 +254,7 @@ export default function ExchangeForm() {
               ? '견적 조회 중...'
               : exchangeMutation.isPending
                 ? '환전 중...'
-                : quote
-                  ? '환전하기'
-                  : '견적 조회'}
+                : '환전하기'}
           </Button>
         </div>
       </CardContent>

@@ -1,4 +1,8 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
 import { getWallet, getExchangeRates } from '@/lib/actions/wallet';
+import { getLatestExchangeRates } from '@/lib/actions/exchange';
 import { Card, CardContent } from '@/components/ui/card';
 import { getBalance } from '@/lib/utils/wallet';
 import { formatAmount } from '@/lib/utils/format';
@@ -12,10 +16,10 @@ const DISPLAY_CURRENCIES: Currency[] = ['KRW', 'USD', 'JPY'];
  * API에서 제공하는 totalKrwBalance를 우선 사용하고,
  * 없으면 wallets 배열을 기반으로 계산합니다.
  */
-async function calculateTotalAssets(
+function calculateTotalAssets(
   wallet: Wallet | undefined,
   rates: LatestExchangeRates | undefined
-): Promise<string> {
+): string {
   if (!wallet) return '0.00';
 
   // API에서 제공하는 totalKrwBalance가 있으면 사용
@@ -47,23 +51,26 @@ async function calculateTotalAssets(
   return formatAmount(totalKRW);
 }
 
-export default async function WalletBalance() {
-  let wallet: Wallet | undefined;
-  let rates;
-  let error: string | null = null;
+export default function WalletBalance() {
+  const { data: wallet, error: walletError, isLoading: walletLoading } = useQuery({
+    queryKey: ['wallet'],
+    queryFn: () => getWallet(),
+  });
 
-  try {
-    [wallet, rates] = await Promise.all([getWallet(), getExchangeRates()]);
-  } catch (err) {
-    error = err instanceof Error ? err.message : '지갑 정보를 불러오는 중 오류가 발생했습니다.';
-  }
+  const { data: rates } = useQuery({
+    queryKey: ['exchangeRates'],
+    queryFn: () => getLatestExchangeRates(),
+  });
 
-  const totalAssets = await calculateTotalAssets(wallet, rates);
+  const error = walletError instanceof Error ? walletError.message : null;
+  const totalAssets = calculateTotalAssets(wallet, rates);
 
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">
-        {error ? (
+        {walletLoading ? (
+          <div className="text-gray-500">지갑 정보를 불러오는 중...</div>
+        ) : error ? (
           <div className="text-red-600">{error}</div>
         ) : (
           <div>
@@ -71,7 +78,7 @@ export default async function WalletBalance() {
             <div className="space-y-3">
               {DISPLAY_CURRENCIES.map((currency) => {
                 const balance = getBalance(wallet, currency);
-                const symbol = currency === 'KRW' ? '₩' : currency === 'USD' ? '$' : '₩';
+                const symbol = currency === 'KRW' ? '₩' : currency === 'USD' ? '$' : currency === 'JPY' ? '¥' : '₩';
                 return (
                   <div key={currency} className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">{currency}</span>

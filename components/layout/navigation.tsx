@@ -21,7 +21,23 @@ export default function Navigation() {
   return (
     <nav className="border-b border-gray-200 bg-gray-100 px-4 py-3">
       <div className="mx-auto flex max-w-4xl items-center justify-between">
-        <div className="text-lg font-semibold text-gray-900">Exchange app</div>
+        <div className="flex items-center gap-2">
+          <svg
+            className="h-5 w-5 text-blue"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
+            />
+          </svg>
+          <div className="text-lg font-semibold text-gray-900">Exchange app</div>
+        </div>
         <div className="flex items-center gap-4">
           <Link
             href="/"
@@ -40,7 +56,7 @@ export default function Navigation() {
             환전내역
           </Link>
           <Button
-            variant="outline"
+            variant="blue"
             size="sm"
             onClick={() => logoutMutation.mutate()}
             disabled={logoutMutation.isPending}

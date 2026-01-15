@@ -32,7 +32,7 @@ export async function getLatestExchangeRates(): Promise<LatestExchangeRates> {
       accept: '*/*',
       Authorization: `Bearer ${token}`,
     },
-    next: { revalidate: 60 }, // 1분마다 재검증
+    cache: 'no-store', // 항상 최신 데이터 조회 (환전 실행 시 최신 환율 필요)
   });
 
   return handleServerApiResponse<LatestExchangeRates>(response);
@@ -88,6 +88,7 @@ export async function getQuote(request: unknown): Promise<QuoteResponse> {
 /**
  * 환전을 실행합니다.
  * POST /orders
+ * EXCHANGE_RATE_MISMATCH 에러 발생 시 최신 환율을 조회하고 재시도합니다.
  */
 export async function executeExchange(request: unknown): Promise<void> {
   // Zod 스키마로 런타임 검증
@@ -106,6 +107,57 @@ export async function executeExchange(request: unknown): Promise<void> {
     redirect('/login');
   }
 
+  // 환전 실행 함수 (재시도용)
+  const attemptExchange = async (exchangeRateId: number) => {
+    const response = await fetch(`${API_BASE_URL}/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        accept: '*/*',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        exchangeRateId,
+        fromCurrency: validatedData.fromCurrency,
+        toCurrency: validatedData.toCurrency,
+        forexAmount: validatedData.forexAmount,
+      }),
+    });
+
+    const data = await response.json();
+
+    // EXCHANGE_RATE_MISMATCH 에러인지 확인
+    if (!response.ok && data.message && data.message.includes('환율 ID')) {
+      // 최신 환율을 다시 조회
+      const latestRates = await getLatestExchangeRates();
+      
+      // 환전할 통화의 exchangeRateId 찾기
+      const targetCurrency = validatedData.fromCurrency === 'KRW' 
+        ? validatedData.toCurrency 
+        : validatedData.fromCurrency;
+      const latestRate = latestRates.find((rate) => rate.currency === targetCurrency);
+
+      if (!latestRate) {
+        throw new Error('최신 환율 정보를 찾을 수 없습니다.');
+      }
+
+      // 최신 환율 ID로 재시도 (1회만)
+      return attemptExchange(latestRate.exchangeRateId);
+    }
+
+    // 일반 에러 처리
+    if (!response.ok || data.code !== 'OK') {
+      const error: { code: string; message: string; data: Record<string, string> | null } = {
+        code: data.code,
+        message: data.message,
+        data: 'data' in data && data.data ? data.data : null,
+      };
+      throw new Error(error.message || '환전 처리 중 오류가 발생했습니다.');
+    }
+
+    return data;
+  };
+
   // 개발 환경에서만 요청 로깅
   if (process.env.NODE_ENV === 'development') {
     console.log('Exchange API Request:', {
@@ -115,20 +167,5 @@ export async function executeExchange(request: unknown): Promise<void> {
     });
   }
 
-  const response = await fetch(`${API_BASE_URL}/orders`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      accept: '*/*',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      exchangeRateId: validatedData.exchangeRateId,
-      fromCurrency: validatedData.fromCurrency,
-      toCurrency: validatedData.toCurrency,
-      forexAmount: validatedData.forexAmount,
-    }),
-  });
-
-  await handleServerApiResponse<unknown>(response);
+  await attemptExchange(validatedData.exchangeRateId);
 }

@@ -3,7 +3,7 @@ import { z } from 'zod';
 /**
  * 통화 타입
  */
-export const currencySchema = z.enum(['KRW', 'USD', 'EUR', 'JPY']);
+export const currencySchema = z.enum(['KRW', 'USD', 'JPY']);
 
 /**
  * 환전 견적 요청 스키마

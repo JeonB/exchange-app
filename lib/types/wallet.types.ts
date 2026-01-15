@@ -1,4 +1,4 @@
-export type Currency = 'KRW' | 'USD' | 'EUR' | 'JPY';
+export type Currency = 'KRW' | 'USD' | 'JPY';
 
 /**
  * 개별 지갑 정보
