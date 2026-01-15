@@ -14,12 +14,12 @@ type TypographyProps = {
 const variantStyles: Record<TypographyVariant, string> = {
   h1: 'text-2xl md:text-[32px] xl:text-[40px] font-bold text-gray-700 leading-[1.33]',
   h2: 'text-xl md:text-2xl font-bold text-gray-700',
-  h3: 'text-lg md:text-xl font-semibold text-gray-900',
-  h4: 'text-base md:text-lg font-semibold text-gray-900',
+  h3: 'text-lg md:text-xl xl:text-2xl font-bold text-black',
+  h4: 'text-base md:text-lg xl:text-xl font-semibold text-gray-600',
   h5: 'text-sm md:text-base font-medium text-gray-900',
   h6: 'text-xs md:text-sm font-medium text-gray-900',
   p: 'text-sm md:text-base text-gray-700',
-  span: 'text-xs md:text-sm text-gray-600',
+  span: 'text-sm md:text-base xl:text-lg text-gray-600 font-medium',
   label: 'text-xs md:text-sm font-medium text-gray-700',
 };
 

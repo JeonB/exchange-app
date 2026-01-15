@@ -82,7 +82,7 @@ export default function WalletBalance() {
                   return (
                     <div key={currency} className="flex items-center justify-between">
                       <Typography variant="span">{currency}</Typography>
-                      <Typography variant="h4" className="text-base md:text-lg">
+                      <Typography variant="h4" className="font-semibold">
                         {symbol} {formatAmount(balance, 2, 2)}
                       </Typography>
                     </div>

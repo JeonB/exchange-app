@@ -33,29 +33,14 @@ export default function ExchangeRates() {
       <Card className="bg-white">
         <CardContent className="pt-4 md:pt-6">
           <div className="mb-2 flex items-start justify-between md:mb-3">
-            <Typography variant="h4" className="text-base md:text-lg">
-              {rate.currency}
-            </Typography>
-            <Typography variant="span">{getCurrencyName(rate.currency)}</Typography>
+            <Typography variant="h4">{rate.currency}</Typography>
+            <Typography variant="h5">{getCurrencyName(rate.currency)}</Typography>
           </div>
-          <Typography variant="h3" className="mb-2 text-lg md:mb-3 md:text-xl">
-            {formatRate(rate.rate)} KRW
+          <Typography variant="h5">{formatRate(rate.rate)} KRW</Typography>
+          <Typography variant="h5" className={isPositive ? 'text-red-600' : 'text-blue-600'}>
+            {isPositive ? '▲' : '▼'} {isPositive ? '+' : ''}
+            {rate.changePercentage.toFixed(1)}%
           </Typography>
-          <div className={`flex items-center gap-1 ${isPositive ? 'text-red-600' : 'text-blue-600'}`}>
-            {isPositive ? (
-              <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            )}
-            <Typography variant="span" className="font-semibold">
-              {isPositive ? '+' : ''}
-              {rate.changePercentage.toFixed(1)}%
-            </Typography>
-          </div>
         </CardContent>
       </Card>
     );

@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { logout } from '@/lib/actions/auth';
 import Button from '@/components/ui/button';
 import Link from 'next/link';
+import Typography from '../ui/typography';
 
 export default function Navigation() {
   const router = useRouter();
@@ -40,27 +41,29 @@ export default function Navigation() {
               d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
             />
           </svg>
-          <div className="text-base font-semibold text-gray-900 md:text-lg">Exchange app</div>
+          <Typography variant="h3">Exchange app</Typography>
         </div>
-        <div className="flex items-center gap-2 md:gap-4">
-          <Link
-            href="/"
-            className={`text-xs font-medium md:text-sm ${
-              pathname === '/' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            환전하기
+        <div className="flex items-center gap-2 md:gap-10">
+          <Link href="/">
+            <Typography
+              variant="span"
+              className={pathname === '/' ? 'text-cta1-hovered font-bold' : 'text-[#8899AA] hover:text-gray-900'}
+            >
+              환전하기
+            </Typography>
           </Link>
-          <Link
-            href="/history"
-            className={`text-xs font-medium md:text-sm ${
-              pathname === '/history' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            환전내역
+          <Link href="/history">
+            <Typography
+              variant="span"
+              className={pathname === '/history' ? 'text-cta1-hovered font-bold' : 'text-[#8899AA] hover:text-gray-900'}
+            >
+              환전 내역
+            </Typography>
           </Link>
           <Button variant="blue" size="sm" onClick={() => logoutMutation.mutate()} disabled={logoutMutation.isPending}>
-            Log out
+            <Typography variant="span" className="text-white">
+              Log out
+            </Typography>
           </Button>
         </div>
       </div>

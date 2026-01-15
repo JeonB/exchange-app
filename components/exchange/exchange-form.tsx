@@ -97,7 +97,7 @@ export default function ExchangeForm() {
               type="button"
               variant={mode === 'buy' ? 'destructive' : 'transparent'}
               onClick={() => handleModeChange('buy')}
-              className={`flex-1 text-sm md:text-base ${mode === 'buy' ? 'text-white' : 'text-destructive'}`}
+              className={`flex-1 text-sm font-bold md:text-xl ${mode === 'buy' ? 'text-white' : 'text-destructive'}`}
             >
               살래요
             </Button>
@@ -105,7 +105,7 @@ export default function ExchangeForm() {
               type="button"
               variant={mode === 'sell' ? 'blue' : 'transparent'}
               onClick={() => handleModeChange('sell')}
-              className={`flex-1 text-sm md:text-base ${mode === 'sell' ? 'text-white' : 'text-blue'}`}
+              className={`flex-1 text-sm font-bold md:text-xl ${mode === 'sell' ? 'text-white' : 'text-blue'}`}
             >
               팔래요
             </Button>
