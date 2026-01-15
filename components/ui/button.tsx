@@ -8,7 +8,7 @@ type ButtonProps = ComponentProps<'button'> & {
 
 export default function Button({ className, variant = 'primary', size = 'md', ...props }: ButtonProps) {
   const baseStyles =
-    'font-medium rounded-lg transition-colors cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
+    'font-medium rounded-xl transition-colors cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variants = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700',
@@ -22,8 +22,8 @@ export default function Button({ className, variant = 'primary', size = 'md', ..
 
   const sizes = {
     sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    md: 'px-4 py-4 text-xl',
+    lg: 'px-6 py-6 text-[22px] leading-[1.33]',
   };
 
   return <button className={cn(baseStyles, variants[variant], sizes[size], className)} {...props} />;

@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import { login } from '@/lib/actions/auth';
 import { useToast } from '@/components/ui/toast';
 import Button from '@/components/ui/button';
-import Input from '@/components/ui/input';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -24,15 +23,15 @@ export default function LoginPage() {
       try {
         await login({ email }, redirectPath);
       } catch (err) {
-        // if (
-        //   err &&
-        //   typeof err === 'object' &&
-        //   'digest' in err &&
-        //   typeof err.digest === 'string' &&
-        //   err.digest.includes('NEXT_REDIRECT')
-        // ) {
-        //   throw err;
-        // }
+        if (
+          err &&
+          typeof err === 'object' &&
+          'digest' in err &&
+          typeof err.digest === 'string' &&
+          err.digest.includes('NEXT_REDIRECT')
+        ) {
+          throw err;
+        }
         const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다.';
         setError(errorMessage);
         showToast(errorMessage, 'error');
@@ -41,8 +40,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="w-full max-w-xl">
         <div className="mb-8 flex flex-col items-center">
           {/* Wi-Fi 아이콘 */}
           <svg
@@ -59,26 +58,29 @@ export default function LoginPage() {
               d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
             />
           </svg>
-          <h1 className="mb-2 text-3xl font-bold text-gray-700">반갑습니다.</h1>
-          <p className="text-gray-600">로그인 정보를 입력해주세요.</p>
+          <h1 className="mb-2 text-5xl font-bold text-gray-700">반갑습니다.</h1>
+          <p className="text-[32px] font-medium text-gray-600">로그인 정보를 입력해주세요.</p>
         </div>
 
-        <div className="bg-gray-0 rounded-lg p-8 shadow-md">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-gray-0 rounded-lg px-8 py-6 shadow-md">
+          <form onSubmit={handleSubmit} className="space-y-8">
             <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-600">
+              <label htmlFor="email" className="mb-3 block text-xl font-medium text-gray-600">
                 이메일 주소를 입력해주세요.
               </label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="test@test.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isPending}
-              />
+              <div className="flex items-center gap-2.5 rounded-lg border border-gray-300 bg-white p-6">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="test@test.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isPending}
+                  className="h-7 min-w-0 flex-1 border-none bg-transparent text-xl text-gray-600 outline-none"
+                />
+              </div>
             </div>
 
             {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}

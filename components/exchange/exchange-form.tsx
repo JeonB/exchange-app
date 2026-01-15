@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { formatAmount, formatRate } from '@/lib/utils/format';
 import { useExchangeForm } from '@/lib/hooks/use-exchange-form';
 import Button from '@/components/ui/button';
-import Input from '@/components/ui/input';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import type { Currency } from '@/lib/types/wallet.types';
 
@@ -115,17 +114,17 @@ export default function ExchangeForm() {
             <label htmlFor="amount" className="mb-3 block text-sm font-medium text-gray-600">
               {mode === 'buy' ? '매수 금액' : '매도 금액'}
             </label>
-            <div className="relative">
-              <Input
+            <div className="flex items-center gap-2.5 rounded-lg border border-gray-300 bg-white p-6">
+              <input
                 id="amount"
                 name="amount"
                 type="number"
                 min="0"
                 value={amount}
                 onChange={(e) => handleAmountChange(e.target.value)}
-                className="bg-white pr-28 text-right text-xl text-gray-600"
+                className="h-7 min-w-0 flex-1 border-none bg-transparent text-right text-xl text-gray-600 outline-none"
               />
-              <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-gray-600">
+              <span className="shrink-0 text-xl leading-none font-bold text-gray-600">
                 {currency === 'USD' ? '달러' : '엔'} {mode === 'buy' ? '사기' : '팔기'}
               </span>
             </div>
@@ -144,17 +143,15 @@ export default function ExchangeForm() {
               <label className="mb-3 block text-sm font-medium text-gray-600">
                 {mode === 'buy' ? '필요 원화' : '받을 원화'}
               </label>
-              <div className="relative">
-                <div className="rounded-lg border border-gray-500 bg-gray-100 p-6 pr-40 text-right text-xl text-gray-600">
+              <div className="flex items-center gap-2.5 rounded-lg border border-gray-500 bg-gray-100 p-6">
+                <span className="min-w-0 flex-1 text-right text-xl leading-none text-gray-600">
                   {quote ? formatAmount(quote.krwAmount) : '0'}
-                </div>
-                <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2">
-                  {mode === 'buy' ? (
-                    <span className="text-red-600">원 필요해요</span>
-                  ) : (
-                    <span className="text-blue-600">원 받을 수 있어요</span>
-                  )}
                 </span>
+                {mode === 'buy' ? (
+                  <span className="shrink-0 text-xl font-bold text-red-600">원 필요해요</span>
+                ) : (
+                  <span className="shrink-0 text-xl font-bold text-blue-600">원 받을 수 있어요</span>
+                )}
               </div>
             </div>
           </div>
