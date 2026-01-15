@@ -19,11 +19,11 @@ export default function Navigation() {
   });
 
   return (
-    <nav className="border-b border-gray-200 bg-gray-100 px-4 py-3">
-      <div className="mx-auto flex max-w-4xl items-center justify-between">
+    <nav className="border-b border-gray-300 px-4 py-3 lg:px-10 lg:py-4">
+      <div className="max-w-8xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
           <svg
-            className="h-5 w-5 text-blue"
+            className="text-blue h-5 w-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -55,12 +55,7 @@ export default function Navigation() {
           >
             환전내역
           </Link>
-          <Button
-            variant="blue"
-            size="sm"
-            onClick={() => logoutMutation.mutate()}
-            disabled={logoutMutation.isPending}
-          >
+          <Button variant="blue" size="sm" onClick={() => logoutMutation.mutate()} disabled={logoutMutation.isPending}>
             Log out
           </Button>
         </div>

@@ -1,261 +1,182 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { getQuote, executeExchange, getLatestExchangeRates } from '@/lib/actions/exchange';
-import { useToast } from '@/components/ui/toast';
+import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { formatAmount, formatRate } from '@/lib/utils/format';
+import { useExchangeForm } from '@/lib/hooks/use-exchange-form';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import type { Currency } from '@/lib/types/wallet.types';
-import type { QuoteRequest, QuoteResponse, ExchangeRequest } from '@/lib/types/exchange.types';
 
-const CURRENCIES: Currency[] = ['KRW', 'USD', 'JPY'];
-
-type ExchangeMode = 'buy' | 'sell';
+const CURRENCY_INFO: Record<Exclude<Currency, 'KRW'>, { flag: string; label: string }> = {
+  USD: { flag: '/flags/us.svg', label: '미국 USD' },
+  JPY: { flag: '/flags/jp.svg', label: '일본 JPY' },
+};
 
 export default function ExchangeForm() {
-  const queryClient = useQueryClient();
-  const { showToast } = useToast();
+  const {
+    mode,
+    currency,
+    amount,
+    quote,
+    error,
+    quoteMutation,
+    exchangeMutation,
+    getAvailableCurrencies,
+    handleCurrencyChange,
+    handleModeChange,
+    handleAmountChange,
+    handleExchange,
+  } = useExchangeForm();
 
-  const [mode, setMode] = useState<ExchangeMode>('buy');
-  const [currency, setCurrency] = useState<Currency>('USD');
-  const [amount, setAmount] = useState('');
-  const [quote, setQuote] = useState<QuoteResponse | null>(null);
-  const [error, setError] = useState('');
-
-  // 최신 환율 조회 (exchangeRateId를 얻기 위해)
-  const { data: latestRates, refetch: refetchLatestRates } = useQuery({
-    queryKey: ['latestExchangeRates'],
-    queryFn: () => getLatestExchangeRates(),
-  });
-
-  // Buy 모드: KRW -> USD (KRW를 사용하여 USD 구매)
-  // Sell 모드: USD -> KRW (USD를 판매하여 KRW 획득)
-  const fromCurrency = mode === 'buy' ? 'KRW' : currency;
-  const toCurrency = mode === 'buy' ? currency : 'KRW';
-
-  // Helper function to get available currencies for exchange (KRW 제외)
-  const getAvailableCurrencies = (): Currency[] => {
-    return CURRENCIES.filter((c) => c !== 'KRW');
-  };
-
-  // Handle currency change
-  const handleCurrencyChange = (newCurrency: Currency) => {
-    setCurrency(newCurrency);
-    setQuote(null);
-  };
-
-  // Handle mode change
-  const handleModeChange = (newMode: ExchangeMode) => {
-    setMode(newMode);
-    setQuote(null);
-  };
-
-  const quoteMutation = useMutation({
-    mutationFn: (request: QuoteRequest) => getQuote(request),
-    onSuccess: (data) => {
-      setQuote(data);
-      setError('');
-    },
-    onError: (err: Error) => {
-      setError(err.message);
-      setQuote(null);
-      showToast(err.message, 'error');
-    },
-  });
-
-  const exchangeMutation = useMutation({
-    mutationFn: (request: ExchangeRequest) => executeExchange(request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallet'] });
-      setAmount('');
-      setQuote(null);
-      setError('');
-      showToast('환전이 완료되었습니다.', 'success');
-    },
-    onError: (err: Error) => {
-      setError(err.message);
-      showToast(err.message, 'error');
-    },
-  });
-
-  // 자동 견적 조회를 위한 debounce
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // 이전 타이머 클리어
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    const amountValue = amount.trim();
-    const parsedAmount = parseFloat(amountValue);
-
-    // 금액이 비어있거나 유효하지 않으면 견적 초기화
-    if (!amountValue || isNaN(parsedAmount) || parsedAmount <= 0) {
-      setQuote(null);
-      setError('');
-      return;
-    }
-
-    // debounce: 500ms 후 견적 조회
-    debounceTimerRef.current = setTimeout(() => {
-      quoteMutation.mutate({
-        fromCurrency,
-        toCurrency,
-        forexAmount: parsedAmount,
-      });
-    }, 500);
-
-    // cleanup
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
       }
-    };
-  }, [amount, fromCurrency, toCurrency]);
-
-  const handleExchange = async () => {
-    if (!quote) {
-      setError('견적을 불러오는 중입니다. 잠시만 기다려주세요.');
-      return;
     }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-    const amountValue = parseFloat(amount.trim());
-    if (isNaN(amountValue) || amountValue <= 0) {
-      setError('환전 금액을 입력해주세요.');
-      return;
-    }
+  const isPending = quoteMutation.isPending || exchangeMutation.isPending;
+  const buttonText = quoteMutation.isPending
+    ? '견적 조회 중...'
+    : exchangeMutation.isPending
+      ? '환전 중...'
+      : '환전하기';
 
-    try {
-      // 환전 실행 직전에 최신 환율을 다시 조회 (캐시 무시)
-      const { data: freshRates } = await refetchLatestRates();
-      
-      if (!freshRates) {
-        setError('환율 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
-        return;
-      }
-
-      // 환전할 통화의 exchangeRateId 찾기
-      // Buy 모드: toCurrency (USD 등), Sell 모드: fromCurrency (USD 등)
-      const targetCurrency = mode === 'buy' ? toCurrency : fromCurrency;
-      const exchangeRate = freshRates.find((rate) => rate.currency === targetCurrency);
-
-      if (!exchangeRate) {
-        setError('환율 정보를 찾을 수 없습니다.');
-        return;
-      }
-
-      exchangeMutation.mutate({
-        exchangeRateId: exchangeRate.exchangeRateId,
-        fromCurrency,
-        toCurrency,
-        forexAmount: amountValue,
-      });
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '환율 정보를 불러오는 중 오류가 발생했습니다.';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-    }
-  };
+  const currentCurrencyInfo = CURRENCY_INFO[currency as Exclude<Currency, 'KRW'>];
 
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader>
-        <CardTitle>{currency} 환전하기</CardTitle>
+        <div className="relative" ref={dropdownRef}>
+          <button
+            type="button"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="hover:bg-secondary-pressed flex cursor-pointer items-center gap-2 text-lg font-semibold text-gray-700"
+          >
+            <Image src={currentCurrencyInfo.flag} alt={currency} width={24} height={24} className="rounded-full" />
+            <span>{currency} 환전하기</span>
+            <svg className="h-4 w-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {isDropdownOpen && (
+            <div className="absolute top-full left-0 z-10 mt-1 w-40 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+              {getAvailableCurrencies().map((curr) => {
+                const info = CURRENCY_INFO[curr as Exclude<Currency, 'KRW'>];
+                return (
+                  <button
+                    key={curr}
+                    type="button"
+                    onClick={() => {
+                      handleCurrencyChange(curr);
+                      setIsDropdownOpen(false);
+                    }}
+                    className="hover:bg-secondary-pressed flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-gray-700"
+                  >
+                    <Image src={info.flag} alt={curr} width={20} height={20} className="rounded-full" />
+                    <span>{info.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Buy/Sell 버튼 */}
-          <div className="flex gap-2">
+      <CardContent className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col space-y-8">
+          <div className="flex gap-2 rounded-2xl bg-white p-3">
             <Button
               type="button"
-              variant={mode === 'buy' ? 'blue' : 'secondary'}
+              variant={mode === 'buy' ? 'destructive' : 'transparent'}
               onClick={() => handleModeChange('buy')}
-              className="flex-1"
+              className={`flex-1 ${mode === 'buy' ? 'text-white' : 'text-destructive'}`}
             >
               살래요
             </Button>
             <Button
               type="button"
-              variant={mode === 'sell' ? 'destructive' : 'secondary'}
+              variant={mode === 'sell' ? 'blue' : 'transparent'}
               onClick={() => handleModeChange('sell')}
-              className="flex-1"
+              className={`flex-1 ${mode === 'sell' ? 'text-white' : 'text-blue'}`}
             >
               팔래요
             </Button>
           </div>
 
-          {/* 통화 선택 */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">통화 선택</label>
-            <select
-              name="currency"
-              value={currency}
-              onChange={(e) => handleCurrencyChange(e.target.value as Currency)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              {getAvailableCurrencies().map((curr) => (
-                <option key={curr} value={curr}>
-                  {curr}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 금액 입력 */}
-          <div>
-            <label htmlFor="amount" className="mb-1 block text-sm font-medium text-gray-700">
+          <div className="flex-1">
+            <label htmlFor="amount" className="mb-3 block text-sm font-medium text-gray-600">
               {mode === 'buy' ? '매수 금액' : '매도 금액'}
             </label>
-            <Input
-              id="amount"
-              name="amount"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder={mode === 'buy' ? `30 달러 사기` : `30 달러 팔기`}
-              value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value);
-              }}
-            />
-          </div>
+            <div className="relative">
+              <Input
+                id="amount"
+                name="amount"
+                type="number"
+                min="0"
+                value={amount}
+                onChange={(e) => handleAmountChange(e.target.value)}
+                className="bg-white pr-28 text-right text-xl text-gray-600"
+              />
+              <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-gray-600">
+                {currency === 'USD' ? '달러' : '엔'} {mode === 'buy' ? '사기' : '팔기'}
+              </span>
+            </div>
 
-          {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-
-          {quote && (
-            <div className="space-y-3">
-              <div className="rounded-lg bg-blue-50 p-4">
-                <div className="mb-2 text-sm text-gray-600">{mode === 'buy' ? '필요 원화' : '받을 원화'}</div>
-                <div className="text-lg font-semibold text-gray-900">
-                  {mode === 'buy'
-                    ? `${formatAmount(quote.krwAmount)} 원이 필요해요`
-                    : `${formatAmount(quote.krwAmount)} 원을 받을 수 있어요`}
-                </div>
-              </div>
-              <div className="text-center text-sm text-gray-600">
-                적용 환율: 1 {currency} = {formatRate(quote.appliedRate)} ₩
+            <div className="my-4.5 flex justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
+                <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
             </div>
-          )}
 
-          <Button
-            type="button"
-            variant="cta1"
-            onClick={handleExchange}
-            disabled={!amount || !quote || quoteMutation.isPending || exchangeMutation.isPending}
-            className="w-full"
-            size="lg"
-          >
-            {quoteMutation.isPending
-              ? '견적 조회 중...'
-              : exchangeMutation.isPending
-                ? '환전 중...'
-                : '환전하기'}
-          </Button>
+            {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+
+            <div className="space-y-3">
+              <label className="mb-3 block text-sm font-medium text-gray-600">
+                {mode === 'buy' ? '필요 원화' : '받을 원화'}
+              </label>
+              <div className="relative">
+                <div className="rounded-lg border border-gray-500 bg-gray-100 p-6 pr-40 text-right text-xl text-gray-600">
+                  {quote ? formatAmount(quote.krwAmount) : '0'}
+                </div>
+                <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2">
+                  {mode === 'buy' ? (
+                    <span className="text-red-600">원 필요해요</span>
+                  ) : (
+                    <span className="text-blue-600">원 받을 수 있어요</span>
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center justify-between">
+            <div className="flex w-full justify-between border-t border-gray-200 py-3 text-sm text-gray-600">
+              <span>적용 환율</span>
+              <span>
+                1 {currency} = {quote ? formatRate(quote.appliedRate) : '0.00'} 원
+              </span>
+            </div>
+            <Button
+              type="button"
+              variant="cta1"
+              onClick={handleExchange}
+              disabled={!amount || !quote || isPending}
+              className="w-full"
+              size="lg"
+            >
+              {buttonText}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

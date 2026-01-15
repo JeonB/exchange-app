@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
@@ -10,23 +10,30 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --color-destructive: #FE5050;
-  --color-blue: #3479EB;
-  --color-cta1: #1B2334;
-  --color-gray-0: #F7F8F9;
-  --color-gray-600: #646F7C;
+  --color-destructive: #fe5050;
+  --color-blue: #3479eb;
+  --color-cta1: #1b2334;
+  --color-gray-0: #f7f8f9;
+  --color-gray-100: #f1f2f4;
+  --color-gray-300: #d0d6db;
+  --color-gray-500: #acb4bb;
+  --color-gray-600: #646f7c;
   --color-gray-700: #374553;
-}
+  --color-gray-800: #28323c;
+  --color-secondary-pressed: #f7f8fa;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --spacing-8xl: 1440px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-pretendard), system-ui, sans-serif;
+}
+
+/* Hide number input spinner */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

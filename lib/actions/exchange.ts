@@ -130,11 +130,10 @@ export async function executeExchange(request: unknown): Promise<void> {
     if (!response.ok && data.message && data.message.includes('환율 ID')) {
       // 최신 환율을 다시 조회
       const latestRates = await getLatestExchangeRates();
-      
+
       // 환전할 통화의 exchangeRateId 찾기
-      const targetCurrency = validatedData.fromCurrency === 'KRW' 
-        ? validatedData.toCurrency 
-        : validatedData.fromCurrency;
+      const targetCurrency =
+        validatedData.fromCurrency === 'KRW' ? validatedData.toCurrency : validatedData.fromCurrency;
       const latestRate = latestRates.find((rate) => rate.currency === targetCurrency);
 
       if (!latestRate) {

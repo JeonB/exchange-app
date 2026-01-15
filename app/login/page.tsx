@@ -43,10 +43,10 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
+        <div className="mb-8 flex flex-col items-center">
           {/* Wi-Fi 아이콘 */}
           <svg
-            className="h-12 w-12 text-blue mb-4"
+            className="text-blue mb-4 h-12 w-12"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -63,7 +63,7 @@ export default function LoginPage() {
           <p className="text-gray-600">로그인 정보를 입력해주세요.</p>
         </div>
 
-        <div className="rounded-lg bg-gray-0 p-8 shadow-md">
+        <div className="bg-gray-0 rounded-lg p-8 shadow-md">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-600">
