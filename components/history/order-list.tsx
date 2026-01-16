@@ -31,58 +31,60 @@ export default async function OrderList() {
           )}
 
           {!error && ordersData && ordersData.length > 0 && (
-            <table className="w-full">
-              <thead>
-                <tr className="border-y border-gray-200">
-                  <th className="py-3 text-left">
-                    <Typography variant="span">거래 ID</Typography>
-                  </th>
-                  <th className="py-3 text-left">
-                    <Typography variant="span">거래 일시</Typography>
-                  </th>
-                  <th className="py-3 text-left">
-                    <Typography variant="span">매수 금액</Typography>
-                  </th>
-                  <th className="py-3 text-left">
-                    <Typography variant="span">체결 환율</Typography>
-                  </th>
-                  <th className="py-3 text-left">
-                    <Typography variant="span">매도 금액</Typography>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+            <div className="w-full">
+              {/* 헤더 */}
+              <div className="-mx-6 h-px bg-gray-200" />
+              <div className="flex">
+                <div className="min-w-0 flex-263 px-4 py-3.5">
+                  <Typography variant="span">거래 ID</Typography>
+                </div>
+                <div className="min-w-0 flex-180 px-4 py-3.5">
+                  <Typography variant="span">거래 일시</Typography>
+                </div>
+                <div className="min-w-0 flex-263 px-4 py-3.5 text-right">
+                  <Typography variant="span">매수 금액</Typography>
+                </div>
+                <div className="min-w-0 flex-263 px-4 py-3.5 text-right">
+                  <Typography variant="span">체결 환율</Typography>
+                </div>
+                <div className="min-w-0 flex-263 px-4 py-3.5 text-right">
+                  <Typography variant="span">매도 금액</Typography>
+                </div>
+              </div>
+              <div className="-mx-6 h-px bg-gray-200" />
+              {/* 바디 */}
+              <div className="">
                 {ordersData.map((order: ExchangeOrder) => (
-                  <tr key={order.orderId}>
-                    <td className="px-4 py-3.5">
+                  <div key={order.orderId} className="flex">
+                    <div className="min-w-0 flex-263 px-4 py-3.5">
                       <Typography variant="span" className="text-gray-700">
                         {order.orderId}
                       </Typography>
-                    </td>
-                    <td className="px-4 py-3.5">
+                    </div>
+                    <div className="min-w-0 flex-180 px-4 py-3.5">
                       <Typography variant="span" className="text-gray-700">
                         {formatDate(order.orderedAt)}
                       </Typography>
-                    </td>
-                    <td className="px-4 py-3.5 text-left">
+                    </div>
+                    <div className="min-w-0 flex-263 px-4 py-3.5 text-right">
                       <Typography variant="span" className="text-gray-700">
-                        {formatAmount(order.fromAmount)}
+                        {formatAmount(order.toAmount, 0, 2)} {order.toCurrency}
                       </Typography>
-                    </td>
-                    <td className="px-4 py-3.5 text-left">
+                    </div>
+                    <div className="min-w-0 flex-263 px-4 py-3.5 text-right">
                       <Typography variant="span" className="text-gray-700">
                         {formatRate(order.appliedRate)}
                       </Typography>
-                    </td>
-                    <td className="px-4 py-3.5 text-left">
+                    </div>
+                    <div className="min-w-0 flex-263 px-4 py-3.5 text-right">
                       <Typography variant="span" className="text-gray-700">
-                        {formatAmount(order.toAmount)}
+                        {formatAmount(order.fromAmount, 0, 2)} {order.fromCurrency}
                       </Typography>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

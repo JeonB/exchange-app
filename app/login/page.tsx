@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { login } from '@/lib/actions/auth';
 import { useToast } from '@/components/ui/toast';
@@ -13,6 +13,14 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isPending, startTransition] = useTransition();
+
+  // 토큰 만료 알림 표시
+  useEffect(() => {
+    const expired = searchParams.get('expired');
+    if (expired === 'true') {
+      showToast('인증이 만료되어 로그아웃됩니다', 'info');
+    }
+  }, [searchParams, showToast]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

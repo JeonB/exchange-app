@@ -51,7 +51,7 @@ export async function handleServerApiResponse<T>(response: Response): Promise<T>
     if (error.code === ErrorCode.UNAUTHORIZED) {
       const cookieStore = await cookies();
       cookieStore.delete('token');
-      redirect('/login');
+      redirect('/login?expired=true');
     }
 
     throw new Error(getErrorMessage(error));
