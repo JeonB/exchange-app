@@ -46,7 +46,7 @@ export default function Navigation() {
         <div className="flex items-center gap-2 md:gap-10">
           <Link href="/">
             <Typography
-              variant="span"
+              variant="p"
               className={pathname === '/' ? 'text-cta1-hovered font-bold' : 'text-[#8899AA] hover:text-gray-900'}
             >
               환전하기
@@ -54,14 +54,14 @@ export default function Navigation() {
           </Link>
           <Link href="/history">
             <Typography
-              variant="span"
+              variant="p"
               className={pathname === '/history' ? 'text-cta1-hovered font-bold' : 'text-[#8899AA] hover:text-gray-900'}
             >
               환전 내역
             </Typography>
           </Link>
           <Button variant="blue" size="sm" onClick={() => logoutMutation.mutate()} disabled={logoutMutation.isPending}>
-            <Typography variant="span" className="text-white">
+            <Typography variant="p" className="font-semibold text-white">
               Log out
             </Typography>
           </Button>

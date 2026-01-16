@@ -7,7 +7,9 @@ export default function HistoryPage() {
     <div className="px-4 md:px-6 lg:px-10 xl:px-20">
       <div className="my-4 md:my-5 lg:my-10">
         <Typography variant="h1">환전 내역</Typography>
-        <Typography variant="span">환전 내역을 확인하실 수 있어요.</Typography>
+        <Typography variant="h4" className="font-normal text-gray-700">
+          환전 내역을 확인하실 수 있어요.
+        </Typography>
       </div>
 
       <Suspense fallback={<div className="py-8 text-center text-gray-500">로딩 중...</div>}>

@@ -28,7 +28,6 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  runtime: 'nodejs', // Next.js 16에서 명시적으로 Node.js 런타임 지정
   matcher: [
     /*
      * Match all request paths except for the ones starting with:

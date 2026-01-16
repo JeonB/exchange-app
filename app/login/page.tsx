@@ -62,19 +62,13 @@ export default function LoginPage() {
           <Typography variant="h1" className="mb-2 text-3xl text-gray-700 md:text-4xl lg:text-5xl">
             반갑습니다.
           </Typography>
-          <Typography variant="p" className="text-xl font-medium text-gray-600 md:text-2xl lg:text-[32px]">
-            로그인 정보를 입력해주세요.
-          </Typography>
+          <Typography variant="h2">로그인 정보를 입력해주세요.</Typography>
         </div>
 
         <div className="bg-gray-0 rounded-xl px-4 py-4 shadow-md md:px-8 md:py-6">
           <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
             <div>
-              <Typography
-                variant="label"
-                htmlFor="email"
-                className="mb-2 block text-base text-gray-600 md:mb-3 md:text-lg lg:text-xl"
-              >
+              <Typography variant="p" htmlFor="email" className="mb-2 text-gray-600 md:mb-3">
                 이메일 주소를 입력해주세요.
               </Typography>
               <div className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white p-4 md:gap-2.5 md:p-6">
@@ -99,7 +93,7 @@ export default function LoginPage() {
             )}
 
             <Button type="submit" variant="cta1" size="lg" className="w-full" disabled={isPending}>
-              {isPending ? '처리 중...' : '로그인 하기'}
+              <Typography variant="button">{isPending ? '처리 중...' : '로그인 하기'}</Typography>
             </Button>
           </form>
         </div>

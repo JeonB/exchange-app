@@ -62,7 +62,9 @@ export default function ExchangeForm() {
             className="hover:bg-secondary-pressed flex cursor-pointer items-center gap-2 text-lg font-semibold text-gray-700"
           >
             <Image src={currentCurrencyInfo.flag} alt={currency} width={24} height={24} className="rounded-full" />
-            <span>{currency} 환전하기</span>
+            <Typography variant="h3" className="text-cta1-hovered">
+              {currency} 환전하기
+            </Typography>
             <svg className="h-4 w-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -79,10 +81,12 @@ export default function ExchangeForm() {
                       handleCurrencyChange(curr);
                       setIsDropdownOpen(false);
                     }}
-                    className="hover:bg-secondary-pressed flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-gray-700"
+                    className="hover:bg-secondary-pressed flex w-full cursor-pointer items-center gap-2 px-4 py-2"
                   >
                     <Image src={info.flag} alt={curr} width={20} height={20} className="rounded-full" />
-                    <span>{info.label}</span>
+                    <Typography variant="p" className="text-gray-700">
+                      {info.label}
+                    </Typography>
                   </button>
                 );
               })}
@@ -112,7 +116,7 @@ export default function ExchangeForm() {
           </div>
 
           <div className="flex-1">
-            <Typography variant="label" htmlFor="amount" className="mb-2 block md:mb-3">
+            <Typography variant="p" htmlFor="amount" className="mb-2 text-gray-600 md:mb-3">
               {mode === 'buy' ? '매수 금액' : '매도 금액'}
             </Typography>
             <div className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white p-4 md:gap-2.5 md:p-6">
@@ -123,11 +127,11 @@ export default function ExchangeForm() {
                 min="0"
                 value={amount}
                 onChange={(e) => handleAmountChange(e.target.value)}
-                className="h-6 min-w-0 flex-1 border-none bg-transparent text-right text-base text-gray-600 outline-none md:h-7 md:text-xl"
+                className="h-6 min-w-0 flex-1 border-none bg-transparent text-right text-base font-bold text-gray-600 outline-none md:h-7 md:text-xl"
               />
-              <span className="shrink-0 text-base leading-none font-bold text-gray-600 md:text-xl">
+              <Typography>
                 {currency === 'USD' ? '달러' : '엔'} {mode === 'buy' ? '사기' : '팔기'}
-              </span>
+              </Typography>
             </div>
 
             <div className="my-3 flex justify-center md:my-4.5">
@@ -150,28 +154,32 @@ export default function ExchangeForm() {
             )}
 
             <div className="space-y-2 md:space-y-3">
-              <Typography variant="label" className="mb-2 block md:mb-3">
+              <Typography variant="p" className="mb-2 text-gray-600 md:mb-3">
                 {mode === 'buy' ? '필요 원화' : '받을 원화'}
               </Typography>
               <div className="flex items-center gap-2 rounded-xl border border-gray-500 bg-gray-100 p-4 md:gap-2.5 md:p-6">
-                <span className="min-w-0 flex-1 text-right text-base leading-none text-gray-600 md:text-xl">
+                <Typography variant="p" className="min-w-0 flex-1 text-right font-semibold text-gray-600">
                   {quote ? formatAmount(quote.krwAmount) : '0'}
-                </span>
+                </Typography>
                 {mode === 'buy' ? (
-                  <span className="shrink-0 text-base font-bold text-red-600 md:text-xl">원 필요해요</span>
+                  <Typography variant="p" className="shrink-0 font-bold text-red-600">
+                    원 필요해요
+                  </Typography>
                 ) : (
-                  <span className="shrink-0 text-base font-bold text-blue-600 md:text-xl">원 받을 수 있어요</span>
+                  <Typography variant="p" className="shrink-0 font-bold text-blue-600">
+                    원 받을 수 있어요
+                  </Typography>
                 )}
               </div>
             </div>
           </div>
 
           <div className="flex flex-col items-center justify-between">
-            <div className="flex w-full justify-between border-t border-gray-200 py-2 text-xs text-gray-600 md:py-3 md:text-sm">
-              <span>적용 환율</span>
-              <span>
+            <div className="flex w-full justify-between border-t border-gray-200 py-4 md:py-8">
+              <Typography>적용 환율</Typography>
+              <Typography variant="h4">
                 1 {currency} = {quote ? formatRate(quote.appliedRate) : '0.00'} 원
-              </span>
+              </Typography>
             </div>
             <Button
               type="button"
@@ -181,7 +189,7 @@ export default function ExchangeForm() {
               className="w-full"
               size="lg"
             >
-              {buttonText}
+              <Typography variant="button">{buttonText}</Typography>
             </Button>
           </div>
         </div>

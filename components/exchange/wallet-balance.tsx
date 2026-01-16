@@ -62,17 +62,13 @@ export default function WalletBalance() {
     <Card className="flex h-full flex-col">
       <CardContent>
         {walletLoading ? (
-          <Typography variant="span" className="text-gray-500">
-            지갑 정보를 불러오는 중...
-          </Typography>
+          <Typography>지갑 정보를 불러오는 중...</Typography>
         ) : error ? (
-          <Typography variant="span" className="text-red-600">
-            {error}
-          </Typography>
+          <Typography className="text-red-600">{error}</Typography>
         ) : (
           <>
             <div className="flex-1">
-              <Typography variant="h3" className="mb-3 text-base md:mb-4 md:text-lg">
+              <Typography variant="h3" className="mb-3">
                 내 지갑
               </Typography>
               <div className="space-y-2 md:space-y-3">
@@ -81,7 +77,7 @@ export default function WalletBalance() {
                   const symbol = currency === 'KRW' ? '₩' : currency === 'USD' ? '$' : currency === 'JPY' ? '¥' : '₩';
                   return (
                     <div key={currency} className="flex items-center justify-between">
-                      <Typography variant="span">{currency}</Typography>
+                      <Typography>{currency}</Typography>
                       <Typography variant="h4" className="font-semibold">
                         {symbol} {formatAmount(balance, 2, 2)}
                       </Typography>
@@ -92,9 +88,7 @@ export default function WalletBalance() {
             </div>
             <div className="mt-4 border-t border-gray-200 pt-3 md:mt-6 md:pt-4">
               <div className="flex items-center justify-between">
-                <Typography variant="span" className="font-medium">
-                  총 보유 자산
-                </Typography>
+                <Typography>총 보유 자산</Typography>
                 <Typography variant="h3" className="text-blue text-lg md:text-xl">
                   ₩ {totalAssets}
                 </Typography>

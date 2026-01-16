@@ -36,7 +36,7 @@ export default function ExchangeRates() {
             <Typography variant="h4">{rate.currency}</Typography>
             <Typography variant="h5">{getCurrencyName(rate.currency)}</Typography>
           </div>
-          <Typography variant="h5">{formatRate(rate.rate)} KRW</Typography>
+          <Typography variant="h3">{formatRate(rate.rate)} KRW</Typography>
           <Typography variant="h5" className={isPositive ? 'text-red-600' : 'text-blue-600'}>
             {isPositive ? '▲' : '▼'} {isPositive ? '+' : ''}
             {rate.changePercentage.toFixed(1)}%

@@ -16,5 +16,5 @@ export function CardTitle({ className, ...props }: ComponentProps<'h3'>) {
 }
 
 export function CardContent({ className, ...props }: ComponentProps<'div'>) {
-  return <div className={cn('flex h-full flex-col px-6 py-4', className)} {...props} />;
+  return <div className={cn('flex h-full flex-col px-6 py-4 md:px-8 md:py-6', className)} {...props} />;
 }
