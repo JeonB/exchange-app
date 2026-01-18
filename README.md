@@ -19,7 +19,9 @@ pnpm install
 pnpm dev
 ```
 
-개발 서버가 실행되면 [http://localhost:3000](http://localhost:3000)에서 애플리케이션을 확인할 수 있습니다.
+### 배포
+
+<https://exchange-app-gamma.vercel.app/>
 
 ## 구현한 기능
 
@@ -137,6 +139,15 @@ pnpm dev
 - 반응형 디자인 구현 용이
 - 작은 번들 크기
 
+### 6. React Compiler
+
+**선택 이유**: 자동 최적화 및 성능 향상
+
+**장점**:
+
+- 자동 메모이제이션으로 불필요한 재렌더링 방지
+- 개발자가 수동으로 최적화할 필요 감소
+
 ## 프로젝트 구조
 
 ```bash
@@ -146,7 +157,7 @@ exchange-app/
 │   ├── history/
 │   │   └── page.tsx            # 환전 내역 페이지
 │   ├── login/
-│   │   └── page.tsx            # 로그인 페이지
+│   │   └── page.tsx            # 로그인 페이지 (서버 컴포넌트)
 │   ├── layout.tsx              # 루트 레이아웃
 │   ├── globals.css             # 전역 스타일
 │   └── fonts/                  # 폰트 파일
@@ -162,6 +173,8 @@ exchange-app/
 │   │   └── order-list.tsx     # 주문 목록
 │   ├── layout/                 # 레이아웃 컴포넌트
 │   │   └── navigation.tsx     # 네비게이션
+│   ├── login/                  # 로그인 관련 컴포넌트
+│   │   └── login-form.tsx      # 로그인 폼 (클라이언트 컴포넌트)
 │   ├── ui/                     # 재사용 UI 컴포넌트
 │   │   ├── button.tsx          # 버튼
 │   │   ├── card.tsx            # 카드
@@ -203,9 +216,26 @@ exchange-app/
 │
 ├── proxy.ts                    # 개발 프록시 설정
 ├── next.config.ts              # Next.js 설정
+├── postcss.config.mjs          # PostCSS 설정
 ├── tsconfig.json               # TypeScript 설정
+├── pnpm-workspace.yaml         # pnpm 워크스페이스 설정
 └── package.json                # 프로젝트 의존성
 ```
+
+## 아키텍처 특징
+
+### 서버/클라이언트 컴포넌트 분리
+
+- **서버 컴포넌트 우선**: 기본적으로 서버 컴포넌트로 구현
+- **클라이언트 컴포넌트 분리**: 상호작용이 필요한 경우에만 클라이언트 컴포넌트로 분리
+  - 예: `LoginForm`은 클라이언트 컴포넌트, `LoginPage`는 서버 컴포넌트
+- **Suspense 경계**: `useSearchParams()` 등 클라이언트 전용 훅 사용 시 Suspense로 감싸기
+
+### 타입 안전성
+
+- **엄격한 TypeScript**: `any` 타입 사용 금지
+- **Zod 스키마**: 런타임 타입 검증
+- **Server Actions**: 타입 안전한 서버 통신
 
 ## 주요 컴포넌트 설명
 
